@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace Develix.Dataset2Sql;
 
@@ -9,6 +10,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        ShowVersionScreen();
+
         var configuration = new ConfigurationBuilder()
            .SetBasePath(Directory.GetCurrentDirectory())
            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -25,7 +28,7 @@ public class Program
         var dbNameInput = Console.ReadLine();
         var dbName = string.IsNullOrWhiteSpace(dbNameInput) ? dbSettings.Name : dbNameInput;
 
-        var connectionString = $"Data Source={dbSettings.Server};Initial Catalog ={ dbName}; TrustServerCertificate = true; User ID = { dbSettings.Username };password ={ dbSettings.Password}        ";
+        var connectionString = $"Data Source={dbSettings.Server};Initial Catalog ={dbName};TrustServerCertificate=true;User ID={dbSettings.Username};password={dbSettings.Password}";
 
         try
         {
@@ -53,7 +56,7 @@ public class Program
 
         CreateDatabase(dbName, masterConnectionString);
 
-        using var connection = new SqlConnection(connectionString);
+        using SqlConnection connection = new(connectionString);
         connection.Open();
 
         foreach (DataTable table in dataSet.Tables)
@@ -62,9 +65,10 @@ public class Program
             ImportTableData(table, connection);
         }
     }
+
     private static void CreateDatabase(string dbName, string masterConnectionString)
     {
-        using SqlConnection masterConnection = new SqlConnection(masterConnectionString);
+        using SqlConnection masterConnection = new(masterConnectionString);
         masterConnection.Open();
 
         var checkDbQuery = $"SELECT COUNT(*) FROM sys.databases WHERE name = '{dbName}'";
@@ -73,9 +77,9 @@ public class Program
 
         if (dbCount > 0)
         {
-            Console.WriteLine($"DB {dbName} already exists. Database must be dropped, OK? (Y/N)");
+            Console.WriteLine($"DB {dbName} already exists. Database must be dropped press 'y' to continue: ");
             var response = Console.ReadLine();
-            if (response != "Y" && response != "y")
+            if (!"y".Equals(response, StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Tschüss.");
                 Environment.Exit(0);
@@ -113,40 +117,32 @@ public class Program
 
         createTableQuery.AppendLine(")");
 
-        using var command = new SqlCommand(createTableQuery.ToString(), connection);
+        using SqlCommand command = new(createTableQuery.ToString(), connection);
         command.ExecuteNonQuery();
         Console.WriteLine($"Table '{table.TableName}' created.");
     }
 
     private static string GetSqlType(Type dotNetType)
     {
-        if (dotNetType == typeof(string))
-            return "NVARCHAR(MAX)";
-        else if (dotNetType == typeof(int))
-            return "INT";
-        else if (dotNetType == typeof(long))
-            return "BIGINT";
-        else if (dotNetType == typeof(decimal))
-            return "DECIMAL(18, 6)";
-        else if (dotNetType == typeof(double))
-            return "FLOAT";
-        else if (dotNetType == typeof(float))
-            return "REAL";
-        else if (dotNetType == typeof(DateTime))
-            return "DATETIME";
-        else if (dotNetType == typeof(bool))
-            return "BIT";
-        else if (dotNetType == typeof(byte))
-            return "TINYINT";
-        else if (dotNetType == typeof(Guid))
-            return "UNIQUEIDENTIFIER";
-        else
-            return "NVARCHAR(MAX)";
+        return dotNetType switch
+        {
+            _ when dotNetType == typeof(string) => "NVARCHAR(MAX)",
+            _ when dotNetType == typeof(int) => "INT",
+            _ when dotNetType == typeof(long) => "BIGINT",
+            _ when dotNetType == typeof(decimal) => "DECIMAL(18, 6)",
+            _ when dotNetType == typeof(double) => "FLOAT",
+            _ when dotNetType == typeof(float) => "REAL",
+            _ when dotNetType == typeof(DateTime) => "DATETIME",
+            _ when dotNetType == typeof(bool) => "BIT",
+            _ when dotNetType == typeof(byte) => "TINYINT",
+            _ when dotNetType == typeof(Guid) => "UNIQUEIDENTIFIER",
+            _ => "NVARCHAR(MAX)"
+        };
     }
 
     private static void ImportTableData(DataTable table, SqlConnection connection)
     {
-        using var bulkCopy = new SqlBulkCopy(connection);
+        using SqlBulkCopy bulkCopy = new(connection);
         bulkCopy.DestinationTableName = table.TableName;
 
         foreach (DataColumn column in table.Columns)
@@ -154,5 +150,27 @@ public class Program
 
         bulkCopy.WriteToServer(table);
         Console.WriteLine($"Imported {table.Rows.Count} rows to table '{table.TableName}'.");
+    }
+
+    static void ShowVersionScreen()
+    {
+        var version = Assembly.GetExecutingAssembly()!.GetName().Version;
+        var title = "Dataset2Sql";
+        var versionText = $"Version: {version}";
+        var width = versionText.Length + 6;
+        var topBorder = "┌" + new string('─', width - 2) + "┐";
+        var bottomBorder = "└" + new string('─', width - 2) + "┘";
+
+        Console.WriteLine(topBorder);
+        Console.WriteLine(FormatLine(title, width));
+        Console.WriteLine(FormatLine(versionText, width));
+        Console.WriteLine(bottomBorder);
+
+        static string FormatLine(string text, int width)
+        {
+            var padding = (width - 2 - text.Length) / 2;
+            var extraSpace = (width - 2 - text.Length) % 2;
+            return "│" + new string(' ', padding) + text + new string(' ', padding + extraSpace) + "│";
+        }
     }
 }
