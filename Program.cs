@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using System.Data.Common;
 
 namespace Develix.Dataset2Sql;
 
@@ -28,14 +29,20 @@ public class Program
         var dbNameInput = Console.ReadLine();
         var dbName = string.IsNullOrWhiteSpace(dbNameInput) ? dbSettings.Name : dbNameInput;
 
-        var connectionString = $"Data Source={dbSettings.Server};Initial Catalog ={dbName};TrustServerCertificate=true;User ID={dbSettings.Username};password={dbSettings.Password}";
-
+        var connectionStringBuilder = new SqlConnectionStringBuilder
+        {
+            DataSource = dbSettings.Server,
+            InitialCatalog = dbName,
+            TrustServerCertificate = true,
+            UserID = dbSettings.Username,
+            Password = dbSettings.Password
+        };
         try
         {
             var dataSet = new DataSet();
             dataSet.ReadXml(xmlFilePath);
 
-            ImportDatasetToSqlServer(dataSet, connectionString, dbName);
+            ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName);
 
             Console.WriteLine("Import completed successfully!");
         }
@@ -50,9 +57,10 @@ public class Program
         Console.ReadKey();
     }
 
-    private static void ImportDatasetToSqlServer(DataSet dataSet, string connectionString, string dbName)
+    private static void ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName)
     {
-        var masterConnectionString = connectionString.Replace(dbName, "master");
+        var connectionString = connectionStringBuilder.ToString();
+        var masterConnectionString = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = "master" }.ToString();
 
         CreateDatabase(dbName, masterConnectionString);
 
