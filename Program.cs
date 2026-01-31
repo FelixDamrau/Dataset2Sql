@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Text;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +23,14 @@ public class Program
 
 
         Console.Write("Enter the path to the XML file: ");
-        var xmlFilePath = Console.ReadLine()?.Trim('"') ?? throw new InvalidOperationException("Invalid file path");
+        var inputPath = Console.ReadLine() ?? throw new InvalidOperationException("Invalid input");
+        var xmlFilePath = inputPath.Trim('"', '\'');
+
+        if (!File.Exists(xmlFilePath))
+        {
+            Console.WriteLine($"Error: File not found at '{xmlFilePath}'");
+            return;
+        }
 
         Console.Write($"Enter DB Name [{dbSettings.Name}]: ");
         var dbNameInput = Console.ReadLine();
