@@ -49,7 +49,8 @@ public class Program
             var dataSet = new DataSet();
             dataSet.ReadXml(xmlFilePath);
 
-            ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName);
+            using var commandBuilder = new SqlCommandBuilder();
+            ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName, commandBuilder);
 
             Console.WriteLine("Import completed successfully!");
         }
@@ -64,30 +65,31 @@ public class Program
         Console.ReadKey();
     }
 
-    private static void ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName)
+    private static void ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, SqlCommandBuilder commandBuilder)
     {
         var connectionString = connectionStringBuilder.ToString();
         var masterConnectionString = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = "master" }.ToString();
 
-        CreateDatabase(dbName, masterConnectionString);
+        CreateDatabase(dbName, masterConnectionString, commandBuilder);
 
         using SqlConnection connection = new(connectionString);
         connection.Open();
 
         foreach (DataTable table in dataSet.Tables)
         {
-            CreateTable(table, connection);
+            CreateTable(table, connection, commandBuilder);
             ImportTableData(table, connection);
         }
     }
 
-    private static void CreateDatabase(string dbName, string masterConnectionString)
+    private static void CreateDatabase(string dbName, string masterConnectionString, SqlCommandBuilder commandBuilder)
     {
         using SqlConnection masterConnection = new(masterConnectionString);
         masterConnection.Open();
 
-        var checkDbQuery = $"SELECT COUNT(*) FROM sys.databases WHERE name = '{dbName}'";
-        var checkDbCmd = new SqlCommand(checkDbQuery, masterConnection);
+        var checkDbQuery = "SELECT COUNT(*) FROM sys.databases WHERE name = @name";
+        using var checkDbCmd = new SqlCommand(checkDbQuery, masterConnection);
+        checkDbCmd.Parameters.AddWithValue("@name", dbName);
         var dbCount = (int)checkDbCmd.ExecuteScalar();
 
         if (dbCount > 0)
@@ -100,29 +102,33 @@ public class Program
                 Environment.Exit(0);
             }
 
-            var dropDbQuery = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{dbName}]";
-            var dropDbCmd = new SqlCommand(dropDbQuery, masterConnection);
+            var safeDbName = SanitizeIdentifier(dbName, commandBuilder);
+            var dropDbQuery = $"ALTER DATABASE {safeDbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {safeDbName}";
+            using var dropDbCmd = new SqlCommand(dropDbQuery, masterConnection);
             dropDbCmd.ExecuteNonQuery();
         }
 
-        var createDbQuery = $"CREATE DATABASE [{dbName}]";
-        var createDbCmd = new SqlCommand(createDbQuery, masterConnection);
+        var safeDbNameForCreate = SanitizeIdentifier(dbName, commandBuilder);
+        var createDbQuery = $"CREATE DATABASE {safeDbNameForCreate}";
+        using var createDbCmd = new SqlCommand(createDbQuery, masterConnection);
         createDbCmd.ExecuteNonQuery();
 
         Console.WriteLine($"Database '{dbName}' created.");
     }
 
-    private static void CreateTable(DataTable table, SqlConnection connection)
+    private static void CreateTable(DataTable table, SqlConnection connection, SqlCommandBuilder commandBuilder)
     {
+        var safeTableName = SanitizeIdentifier(table.TableName, commandBuilder);
         var createTableQuery = new StringBuilder();
-        createTableQuery.AppendLine($"CREATE TABLE [{table.TableName}] (");
+        createTableQuery.AppendLine($"CREATE TABLE {safeTableName} (");
 
         for (var i = 0; i < table.Columns.Count; i++)
         {
             var column = table.Columns[i];
             var sqlType = GetSqlType(column.DataType);
+            var safeColumnName = SanitizeIdentifier(column.ColumnName, commandBuilder);
 
-            createTableQuery.Append($"    [{column.ColumnName}] {sqlType}");
+            createTableQuery.Append($"    {safeColumnName} {sqlType}");
 
             if (i < table.Columns.Count - 1)
                 createTableQuery.AppendLine(",");
@@ -135,6 +141,14 @@ public class Program
         using SqlCommand command = new(createTableQuery.ToString(), connection);
         command.ExecuteNonQuery();
         Console.WriteLine($"Table '{table.TableName}' created.");
+    }
+
+    private static string SanitizeIdentifier(string identifier, SqlCommandBuilder commandBuilder)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            throw new ArgumentException("Identifier cannot be null or empty.", nameof(identifier));
+
+        return commandBuilder.QuoteIdentifier(identifier);
     }
 
     private static string GetSqlType(Type dotNetType)
