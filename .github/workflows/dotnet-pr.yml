@@ -7,18 +7,8 @@ on:
 jobs:
   build:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "10.x"
-
-      - name: Restore dependencies
-        run: dotnet restore Dataset2Sql.slnx
-
-      - name: Build
-        run: dotnet build Dataset2Sql.slnx --configuration Release --no-restore
+    uses: ./.github/workflows/dotnet-common.yml
+    with:
+      publish_output: publish-pr
+      create_release: false
+    secrets: inherit
