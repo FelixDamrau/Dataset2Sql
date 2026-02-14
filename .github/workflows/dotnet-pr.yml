@@ -18,7 +18,7 @@ jobs:
           dotnet-version: "10.x"
 
       - name: Restore dependencies
-        run: dotnet restore Dataset2Sql.sln
+        run: dotnet restore Dataset2Sql.slnx
 
       - name: Build
-        run: dotnet build Dataset2Sql.sln --configuration Release --no-restore
+        run: dotnet build Dataset2Sql.slnx --configuration Release --no-restore
