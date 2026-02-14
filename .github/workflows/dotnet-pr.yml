@@ -1,0 +1,24 @@
+name: .NET PR Pipeline
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.x"
+
+      - name: Restore dependencies
+        run: dotnet restore Dataset2Sql.sln
+
+      - name: Build
+        run: dotnet build Dataset2Sql.sln --configuration Release --no-restore
