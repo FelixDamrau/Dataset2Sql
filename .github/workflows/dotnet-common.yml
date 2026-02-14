@@ -10,6 +10,10 @@ on:
         required: false
         type: boolean
         default: false
+      enforce_format:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -31,6 +35,10 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore Dataset2Sql.slnx
+
+      - name: Verify formatting
+        if: inputs.enforce_format == true
+        run: dotnet format Dataset2Sql.csproj --verify-no-changes --no-restore
 
       - name: Build
         run: dotnet build Dataset2Sql.slnx --configuration Release --no-restore

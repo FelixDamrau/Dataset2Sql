@@ -11,4 +11,5 @@ jobs:
     with:
       publish_output: publish-pr
       create_release: false
+      enforce_format: true
     secrets: inherit

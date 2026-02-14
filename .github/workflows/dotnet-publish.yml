@@ -10,4 +10,5 @@ jobs:
     with:
       publish_output: publish
       create_release: true
+      enforce_format: false
     secrets: inherit
