@@ -16,10 +16,10 @@ on:
         default: false
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,15 +57,34 @@ jobs:
             /p:DebugSymbols=true \
             -o ./${{ inputs.publish_output }}
 
-      - name: Create zip archive
+      - name: Upload publish output
         if: inputs.create_release == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-output
+          path: ./${{ inputs.publish_output }}
+          retention-days: 1
+
+  release:
+    if: inputs.create_release == true
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-output
+          path: ./${{ inputs.publish_output }}
+
+      - name: Create zip archive
         run: |
           cd "${{ inputs.publish_output }}"
           zip -r "../Dataset2Sql_${{ github.ref_name }}.zip" *
           cd ..
 
       - name: Create GitHub Release
-        if: inputs.create_release == true
         uses: FelixDamrau/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
