@@ -56,7 +56,7 @@ public class DatasetImporter
         using var createDbCmd = new SqlCommand(createDbQuery, masterConnection);
         createDbCmd.ExecuteNonQuery();
 
-        Console.WriteLine($"Database '{dbName}' created.");
+        Log.Info($"Database '{dbName}' created.");
     }
 
     private void CreateTable(DataTable table, SqlConnection connection)
@@ -83,7 +83,7 @@ public class DatasetImporter
 
         using SqlCommand command = new(createTableQuery.ToString(), connection);
         command.ExecuteNonQuery();
-        Console.WriteLine($"Table '{table.TableName}' created.");
+        Log.Info($"Table '{table.TableName}' created.");
     }
 
     private string SanitizeIdentifier(string identifier)
@@ -121,6 +121,6 @@ public class DatasetImporter
             bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
 
         bulkCopy.WriteToServer(table);
-        Console.WriteLine($"Imported {table.Rows.Count} rows to table '{table.TableName}'.");
+        Log.Info($"Imported {table.Rows.Count} rows to table '{table.TableName}'.");
     }
 }
