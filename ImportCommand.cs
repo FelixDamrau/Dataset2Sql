@@ -101,11 +101,15 @@ internal sealed class ImportCommand : Command<ImportCommandSettings>
         if (!string.IsNullOrWhiteSpace(settings.DatabaseName))
             return settings.DatabaseName;
 
+        if (Console.IsInputRedirected)
+        {
+            return !string.IsNullOrWhiteSpace(defaultDatabaseName)
+                ? defaultDatabaseName
+                : throw new InvalidOperationException("Database name is required in non-interactive mode. Use --db.");
+        }
+
         if (string.IsNullOrWhiteSpace(defaultDatabaseName))
         {
-            if (Console.IsInputRedirected)
-                throw new InvalidOperationException("Database name is required in non-interactive mode. Use --db.");
-
             return AnsiConsole.Prompt(
                 new TextPrompt<string>("[silver]Enter DB Name:[/]")
                     .PromptStyle("white")
@@ -132,7 +136,7 @@ internal sealed class ImportCommand : Command<ImportCommandSettings>
             return true;
         }
 
-        AnsiConsole.MarkupLine($"[yellow]Database '{Markup.Escape(dbName)}' already exists.[/]");
+        Log.Warn($"Database '{Markup.Escape(dbName)}' already exists.");
         var response = AnsiConsole.Prompt(
             new TextPrompt<string>($"[silver]Type the exact database name to confirm drop[/] [[{Markup.Escape(dbName)}]]")
                 .PromptStyle("white")
