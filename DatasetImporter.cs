@@ -13,12 +13,13 @@ public class DatasetImporter
         _commandBuilder = commandBuilder;
     }
 
-    public void ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
+    public bool ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
     {
         var connectionString = connectionStringBuilder.ToString();
         var masterConnectionString = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = "master" }.ToString();
 
-        CreateDatabase(dbName, masterConnectionString, confirmDropCallback);
+        if (!CreateDatabase(dbName, masterConnectionString, confirmDropCallback))
+            return false;
 
         using SqlConnection connection = new(connectionString);
         connection.Open();
@@ -28,9 +29,11 @@ public class DatasetImporter
             CreateTable(table, connection);
             ImportTableData(table, connection);
         }
+
+        return true;
     }
 
-    private void CreateDatabase(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback)
+    private bool CreateDatabase(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback)
     {
         using SqlConnection masterConnection = new(masterConnectionString);
         masterConnection.Open();
@@ -43,7 +46,7 @@ public class DatasetImporter
         if (dbCount > 0)
         {
             if (!confirmDropCallback(dbName))
-                return;
+                return false;
 
             var safeDbName = SanitizeIdentifier(dbName);
             var dropDbQuery = $"ALTER DATABASE {safeDbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {safeDbName}";
@@ -57,6 +60,7 @@ public class DatasetImporter
         createDbCmd.ExecuteNonQuery();
 
         Log.Info($"Database '{dbName}' created.");
+        return true;
     }
 
     private void CreateTable(DataTable table, SqlConnection connection)

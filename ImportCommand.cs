@@ -44,7 +44,12 @@ internal sealed class ImportCommand : Command<ImportCommandSettings>
             using var commandBuilder = new SqlCommandBuilder();
             var importer = new DatasetImporter(commandBuilder);
 
-            importer.ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName, name => ConfirmDatabaseDrop(name, settings.AutoConfirmDrop));
+            var importCompleted = importer.ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName, name => ConfirmDatabaseDrop(name, settings.AutoConfirmDrop));
+            if (!importCompleted)
+            {
+                Log.Info("Import canceled by user.");
+                return 0;
+            }
 
             Log.Info("Import completed successfully.");
             return 0;
@@ -145,7 +150,6 @@ internal sealed class ImportCommand : Command<ImportCommandSettings>
         if (!string.Equals(response, dbName, StringComparison.Ordinal))
         {
             Log.Info("Database drop not confirmed. Exiting.");
-            Environment.Exit(0);
             return false;
         }
 
