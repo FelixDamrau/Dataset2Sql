@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 
 namespace Develix.Dataset2Sql;
 
-internal sealed class ImportCommandSettings : CommandSettings
+public sealed class ImportCommandSettings : CommandSettings
 {
     [CommandOption("-x|--xml <XML_PATH>")]
     [Description("XML file to import.")]

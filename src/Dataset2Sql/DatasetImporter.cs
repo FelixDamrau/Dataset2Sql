@@ -1,17 +1,11 @@
 using System.Data;
-using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace Develix.Dataset2Sql;
 
-public class DatasetImporter
+public class DatasetImporter(SqlCommandBuilder commandBuilder)
 {
-    private readonly SqlCommandBuilder _commandBuilder;
-
-    public DatasetImporter(SqlCommandBuilder commandBuilder)
-    {
-        _commandBuilder = commandBuilder;
-    }
+    private readonly SqlCommandBuilder commandBuilder = commandBuilder;
 
     public bool ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
     {
@@ -65,55 +59,17 @@ public class DatasetImporter
 
     private void CreateTable(DataTable table, SqlConnection connection)
     {
-        var safeTableName = SanitizeIdentifier(table.TableName);
-        var createTableQuery = new StringBuilder();
-        createTableQuery.AppendLine($"CREATE TABLE {safeTableName} (");
+        var createTableQuery = CreateTableSqlBuilder.Build(table, SanitizeIdentifier, SqlTypeMapper.Map);
 
-        for (var i = 0; i < table.Columns.Count; i++)
-        {
-            var column = table.Columns[i];
-            var sqlType = GetSqlType(column.DataType);
-            var safeColumnName = SanitizeIdentifier(column.ColumnName);
-
-            createTableQuery.Append($"    {safeColumnName} {sqlType}");
-
-            if (i < table.Columns.Count - 1)
-                createTableQuery.AppendLine(",");
-            else
-                createTableQuery.AppendLine();
-        }
-
-        createTableQuery.AppendLine(")");
-
-        using SqlCommand command = new(createTableQuery.ToString(), connection);
+        using SqlCommand command = new(createTableQuery, connection);
         command.ExecuteNonQuery();
         Log.Info($"Table '{table.TableName}' created.");
     }
 
     private string SanitizeIdentifier(string identifier)
     {
-        if (string.IsNullOrWhiteSpace(identifier))
-            throw new ArgumentException("Identifier cannot be null or empty.", nameof(identifier));
-
-        return _commandBuilder.QuoteIdentifier(identifier);
-    }
-
-    private static string GetSqlType(Type dotNetType)
-    {
-        return dotNetType switch
-        {
-            _ when dotNetType == typeof(string) => "NVARCHAR(MAX)",
-            _ when dotNetType == typeof(int) => "INT",
-            _ when dotNetType == typeof(long) => "BIGINT",
-            _ when dotNetType == typeof(decimal) => "DECIMAL(18, 6)",
-            _ when dotNetType == typeof(double) => "FLOAT",
-            _ when dotNetType == typeof(float) => "REAL",
-            _ when dotNetType == typeof(DateTime) => "DATETIME",
-            _ when dotNetType == typeof(bool) => "BIT",
-            _ when dotNetType == typeof(byte) => "TINYINT",
-            _ when dotNetType == typeof(Guid) => "UNIQUEIDENTIFIER",
-            _ => "NVARCHAR(MAX)"
-        };
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+        return commandBuilder.QuoteIdentifier(identifier);
     }
 
     private static void ImportTableData(DataTable table, SqlConnection connection)

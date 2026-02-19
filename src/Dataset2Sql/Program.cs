@@ -16,7 +16,7 @@ public class Program
             config.SetApplicationName("Dataset2Sql");
             config.Settings.StrictParsing = true;
             config.ValidateExamples();
-            config.AddExample(new[] { "--xml", "./dump.xml", "--db", "DumpDb", "--yes" });
+            config.AddExample(["--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
         });
 
         return app.Run(args);
@@ -43,4 +43,3 @@ public class Program
         AnsiConsole.Write(panel);
     }
 }
-
