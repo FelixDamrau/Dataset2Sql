@@ -38,14 +38,17 @@ jobs:
 
       - name: Verify formatting
         if: inputs.enforce_format == true
-        run: dotnet format Dataset2Sql.csproj --verify-no-changes --no-restore
+        run: dotnet format Dataset2Sql.slnx --verify-no-changes --no-restore
 
       - name: Build
         run: dotnet build Dataset2Sql.slnx --configuration Release --no-restore
 
+      - name: Run tests
+        run: dotnet test --solution Dataset2Sql.slnx --configuration Release --no-build --no-restore
+
       - name: Publish
         run: |
-          dotnet publish Dataset2Sql.csproj \
+          dotnet publish src/Dataset2Sql/Dataset2Sql.csproj \
             --configuration Release \
             --runtime win-x64 \
             --self-contained true \
