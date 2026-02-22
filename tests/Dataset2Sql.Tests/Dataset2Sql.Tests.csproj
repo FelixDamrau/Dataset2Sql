@@ -7,8 +7,6 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Develix.Dataset2Sql.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
