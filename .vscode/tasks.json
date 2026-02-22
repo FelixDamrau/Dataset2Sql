@@ -20,20 +20,20 @@
       "args": [
         "publish",
         "${workspaceFolder}/src/Dataset2Sql/Dataset2Sql.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary;ForceNoAlign"
-      ],
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "label": "watch",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "watch",
-        "run",
-        "--project",
-        "${workspaceFolder}/src/Dataset2Sql/Dataset2Sql.csproj"
+        "--configuration",
+        "Release",
+        "--runtime",
+        "win-x64",
+        "--self-contained",
+        "true",
+        "/p:PublishSingleFile=true",
+        "/p:IncludeNativeLibrariesForSelfExtract=true",
+        "/p:PublishReadyToRun=true",
+        "/p:EnableCompressionInSingleFile=true",
+        "/p:DebugType=embedded",
+        "/p:DebugSymbols=true",
+        "-o",
+        "${workspaceFolder}/publish"
       ],
       "problemMatcher": "$msCompile"
     }
