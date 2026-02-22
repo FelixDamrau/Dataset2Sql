@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Develix.Dataset2Sql</RootNamespace>
-    <Version>0.1.2</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
