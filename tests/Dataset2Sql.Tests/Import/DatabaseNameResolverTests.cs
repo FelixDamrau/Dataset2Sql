@@ -5,7 +5,7 @@ namespace Develix.Dataset2Sql.Tests.Import;
 public class DatabaseNameResolverTests
 {
     [Test]
-    public async Task Resolve_ReturnsSettingsValue_WhenProvided()
+    public async Task Resolve_WhenDatabaseNameIsProvided_ThenReturnsDatabaseName()
     {
         var name = DatabaseNameResolver.Resolve(
             databaseName: "CliDb",
@@ -17,7 +17,7 @@ public class DatabaseNameResolverTests
     }
 
     [Test]
-    public async Task Resolve_ReturnsDefault_WhenInputRedirectedAndDefaultExists()
+    public async Task Resolve_WhenInputIsRedirectedAndDefaultExists_ThenReturnsDefault()
     {
         var name = DatabaseNameResolver.Resolve(
             databaseName: null,
@@ -29,7 +29,7 @@ public class DatabaseNameResolverTests
     }
 
     [Test]
-    public async Task Resolve_Throws_WhenInputRedirectedAndNoDefault()
+    public async Task Resolve_WhenInputIsRedirectedAndDefaultMissing_ThenThrows()
     {
         static string resolveAction() => DatabaseNameResolver.Resolve(
             databaseName: null,
@@ -41,9 +41,8 @@ public class DatabaseNameResolverTests
     }
 
     [Test]
-    public async Task Resolve_UsesPromptWithNullDefault_WhenInteractiveAndNoDefault()
+    public async Task Resolve_WhenInteractiveAndDefaultMissing_ThenPromptsWithNullDefault()
     {
-        var promptDbName = "PromptDb";
         string? receivedDefaultName = "initial";
         var name = DatabaseNameResolver.Resolve(
             databaseName: null,
@@ -52,15 +51,15 @@ public class DatabaseNameResolverTests
             promptForDbName: defaultName =>
             {
                 receivedDefaultName = defaultName;
-                return promptDbName;
+                return "PromptDb";
             });
 
-        await Assert.That(name).IsEqualTo(promptDbName);
+        await Assert.That(name).IsEqualTo("PromptDb");
         await Assert.That(receivedDefaultName).IsNull();
     }
 
     [Test]
-    public async Task Resolve_UsesPromptWithDefault_WhenInteractiveAndDefaultExists()
+    public async Task Resolve_WhenInteractiveAndDefaultExists_ThenPromptsWithDefault()
     {
         string? receivedDefaultName = null;
         var name = DatabaseNameResolver.Resolve(
@@ -70,10 +69,10 @@ public class DatabaseNameResolverTests
             promptForDbName: defaultValue =>
             {
                 receivedDefaultName = defaultValue;
-                return $"{defaultValue}_Chosen";
+                return "ChosenDb";
             });
 
-        await Assert.That(name).IsEqualTo("ConfigDb_Chosen");
+        await Assert.That(name).IsEqualTo("ChosenDb");
         await Assert.That(receivedDefaultName).IsEqualTo("ConfigDb");
     }
 }

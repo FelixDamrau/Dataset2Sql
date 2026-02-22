@@ -5,7 +5,7 @@ namespace Develix.Dataset2Sql.Tests.SqlGeneration;
 public class CreateTableSqlBuilderTests
 {
     [Test]
-    public async Task Build_GeneratesCreateTableSql_ForSimpleTable()
+    public async Task Build_WhenTableHasSimpleColumns_ThenGeneratesCreateTableSql()
     {
         var table = new DataTable("MARA");
         table.Columns.Add("MATNR", typeof(string));
@@ -20,7 +20,7 @@ public class CreateTableSqlBuilderTests
     }
 
     [Test]
-    public async Task Build_GeneratesCreateTableSql_ForEscapedIdentifiers()
+    public async Task Build_WhenTableHasEscapedIdentifiers_ThenGeneratesCreateTableSql()
     {
         var table = new DataTable("What ' WAIT?");
         table.Columns.Add("How -- did", typeof(long));
@@ -34,7 +34,7 @@ public class CreateTableSqlBuilderTests
     }
 
     [Test]
-    public async Task Build_Throws_WhenTableIsNull()
+    public async Task Build_WhenTableIsNull_ThenThrows()
     {
         static string action() => CreateTableSqlBuilder.Build(null!, BracketQuote, SqlTypeMapper.Map);
 
@@ -42,7 +42,7 @@ public class CreateTableSqlBuilderTests
     }
 
     [Test]
-    public async Task Build_Throws_WhenQuoteIdentifierIsNull()
+    public async Task Build_WhenQuoteIdentifierIsNull_ThenThrows()
     {
         var table = new DataTable("MARM");
         string action() => CreateTableSqlBuilder.Build(table, null!, SqlTypeMapper.Map);
@@ -51,7 +51,7 @@ public class CreateTableSqlBuilderTests
     }
 
     [Test]
-    public async Task Build_Throws_WhenMapSqlTypeIsNull()
+    public async Task Build_WhenMapSqlTypeIsNull_ThenThrows()
     {
         var table = new DataTable("MAKT");
         string action() => CreateTableSqlBuilder.Build(table, BracketQuote, null!);
@@ -60,7 +60,7 @@ public class CreateTableSqlBuilderTests
     }
 
     [Test]
-    public async Task Build_GeneratesCreateTableSql_ForTableWithoutColumns()
+    public async Task Build_WhenTableHasNoColumns_ThenGeneratesCreateTableSql()
     {
         var table = new DataTable("Empty");
 

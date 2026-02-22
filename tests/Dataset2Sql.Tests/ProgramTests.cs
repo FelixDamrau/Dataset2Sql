@@ -4,7 +4,7 @@ public class ProgramTests
 {
     [Test]
     [MethodDataSource(nameof(GetShouldPauseOnExitTestData))]
-    public async Task ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected, bool expectedShouldPauseOnExit)
+    public async Task ShouldPauseOnExit_WhenGivenCliAndRedirectionState_ThenReturnsExpectedDecision(string[] args, bool isInputRedirected, bool isOutputRedirected, bool expectedShouldPauseOnExit)
     {
         var shouldPause = Program.ShouldPauseOnExit(args, isInputRedirected, isOutputRedirected);
 

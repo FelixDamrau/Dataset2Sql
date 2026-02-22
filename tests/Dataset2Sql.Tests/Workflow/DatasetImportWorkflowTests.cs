@@ -7,7 +7,7 @@ namespace Develix.Dataset2Sql.Tests.Workflow;
 public class DatasetImportWorkflowTests
 {
     [Test]
-    public async Task Run_ReturnsFileNotFound_WhenXmlDoesNotExist()
+    public async Task Run_WhenXmlFileDoesNotExist_ThenReturnsFileNotFound()
     {
         var fileSystem = new FakeFileSystem(exists: false);
         var reader = new FakeDataSetXmlReader();
@@ -23,7 +23,7 @@ public class DatasetImportWorkflowTests
     }
 
     [Test]
-    public async Task Run_ReturnsCompleted_WhenImportExecutorReturnsTrue()
+    public async Task Run_WhenImportExecutorReturnsTrue_ThenReturnsCompleted()
     {
         var fileSystem = new FakeFileSystem(exists: true);
         var reader = new FakeDataSetXmlReader();
@@ -40,7 +40,7 @@ public class DatasetImportWorkflowTests
     }
 
     [Test]
-    public async Task Run_ReturnsCancelled_WhenImportExecutorReturnsFalse()
+    public async Task Run_WhenImportExecutorReturnsFalse_ThenReturnsCancelled()
     {
         var fileSystem = new FakeFileSystem(exists: true);
         var reader = new FakeDataSetXmlReader();
@@ -53,7 +53,7 @@ public class DatasetImportWorkflowTests
     }
 
     [Test]
-    public async Task Run_PropagatesExceptions_FromDataSetReader()
+    public async Task Run_WhenDataSetReaderThrows_ThenPropagatesException()
     {
         var fileSystem = new FakeFileSystem(exists: true);
         var reader = new FakeDataSetXmlReader { ExceptionToThrow = new IOException("invalid xml") };

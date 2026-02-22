@@ -3,7 +3,7 @@ namespace Develix.Dataset2Sql.Tests.Import;
 public class DropConfirmationPolicyTests
 {
     [Test]
-    public async Task ShouldDrop_ReturnsTrue_WhenAutoConfirmIsEnabled()
+    public async Task ShouldDrop_WhenAutoConfirmIsEnabled_ThenReturnsTrue()
     {
         var shouldDrop = DropConfirmationPolicy.ShouldDrop("DumpDb", autoConfirmDrop: true, () => "wrong");
 
@@ -11,7 +11,7 @@ public class DropConfirmationPolicyTests
     }
 
     [Test]
-    public async Task ShouldDrop_ReturnsTrue_WhenResponseMatchesExactly()
+    public async Task ShouldDrop_WhenResponseMatchesExactly_ThenReturnsTrue()
     {
         var shouldDrop = DropConfirmationPolicy.ShouldDrop("DumpDb", autoConfirmDrop: false, () => "DumpDb");
 
@@ -19,7 +19,7 @@ public class DropConfirmationPolicyTests
     }
 
     [Test]
-    public async Task ShouldDrop_ReturnsFalse_WhenResponseDoesNotMatch()
+    public async Task ShouldDrop_WhenResponseDoesNotMatch_ThenReturnsFalse()
     {
         var shouldDrop = DropConfirmationPolicy.ShouldDrop("DumpDb", autoConfirmDrop: false, () => "dumpdb");
 

@@ -14,7 +14,8 @@ public class SqlTypeMapperTests
     [Arguments(typeof(byte), "TINYINT")]
     [Arguments(typeof(Guid), "UNIQUEIDENTIFIER")]
     [Arguments(typeof(TimeSpan), "NVARCHAR(MAX)")]
-    public async Task Map_ReturnsExpectedSqlType(Type dotNetType, string expectedSqlType)
+    [Arguments(typeof(Type), "NVARCHAR(MAX)")]
+    public async Task Map_WhenGivenDotNetType_ThenReturnsExpectedSqlType(Type dotNetType, string expectedSqlType)
     {
         var actual = SqlTypeMapper.Map(dotNetType);
 
