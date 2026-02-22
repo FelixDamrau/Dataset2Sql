@@ -13,8 +13,8 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
         try
         {
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 
             var dbSettings = new DatabaseSettings();
@@ -129,7 +129,7 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
             return true;
         }
 
-        Log.Warn($"Database '{Markup.Escape(dbName)}' already exists.");
+        Log.Warn($"Database '{dbName}' already exists.");
         var isConfirmed = DropConfirmationPolicy.ShouldDrop(
             dbName,
             autoConfirmDrop,
