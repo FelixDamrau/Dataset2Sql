@@ -25,4 +25,8 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dataset2Sql.Tests" />
+  </ItemGroup>
+
 </Project>

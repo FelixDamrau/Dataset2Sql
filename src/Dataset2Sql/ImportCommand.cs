@@ -65,14 +65,6 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
                 Log.Error($"Inner exception: {ex.InnerException.Message}");
             return 1;
         }
-        finally
-        {
-            if (settings.IsInteractive)
-            {
-                AnsiConsole.MarkupLine("[grey]Press any key to exit...[/]");
-                Console.ReadKey();
-            }
-        }
     }
 
     private static string ResolveXmlPath(ImportCommandSettings settings)

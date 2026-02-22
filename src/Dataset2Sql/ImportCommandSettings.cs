@@ -16,10 +16,4 @@ public sealed class ImportCommandSettings : CommandSettings
     [CommandOption("-y|--yes")]
     [Description("Automatically confirm database drop.")]
     public bool AutoConfirmDrop { get; init; }
-
-    public bool IsInteractive => string.IsNullOrWhiteSpace(XmlFilePath)
-        && string.IsNullOrWhiteSpace(DatabaseName)
-        && !AutoConfirmDrop
-        && !Console.IsInputRedirected
-        && !Console.IsOutputRedirected;
 }

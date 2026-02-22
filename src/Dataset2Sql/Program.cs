@@ -19,8 +19,19 @@ public class Program
             config.AddExample(["--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
         });
 
-        return app.Run(args);
+        var exitCode = app.Run(args);
+
+        if (ShouldPauseOnExit(args, Console.IsInputRedirected, Console.IsOutputRedirected))
+        {
+            AnsiConsole.MarkupLine("[grey]Press any key to exit...[/]");
+            Console.ReadKey();
+        }
+
+        return exitCode;
     }
+
+    internal static bool ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected)
+        => args.Length == 0 && !isInputRedirected && !isOutputRedirected;
 
     private static void ShowVersionScreen()
     {
