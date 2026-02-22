@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Dataset2Sql",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Dataset2Sql/bin/Debug/net10.0/Dataset2Sql.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Dataset2Sql",
+      "console": "externalTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Attach (pick process)",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "justMyCode": true
+    }
+  ]
+}

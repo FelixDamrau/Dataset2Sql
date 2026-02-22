@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Dataset2Sql/Dataset2Sql.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/Dataset2Sql/Dataset2Sql.csproj",
+        "--configuration",
+        "Release",
+        "--runtime",
+        "win-x64",
+        "--self-contained",
+        "true",
+        "/p:PublishSingleFile=true",
+        "/p:IncludeNativeLibrariesForSelfExtract=true",
+        "/p:PublishReadyToRun=true",
+        "/p:EnableCompressionInSingleFile=true",
+        "/p:DebugType=embedded",
+        "/p:DebugSymbols=true",
+        "-o",
+        "${workspaceFolder}/publish"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
