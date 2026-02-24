@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="Dataset2Sql.csproj" />
+  <Project Path="src/Dataset2Sql/Dataset2Sql.csproj" />
+  <Project Path="tests/Dataset2Sql.Tests/Dataset2Sql.Tests.csproj" />
 </Solution>
