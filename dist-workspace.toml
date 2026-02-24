@@ -1,0 +1,32 @@
+[workspace]
+members = ["dist:."]
+
+[package]
+name = "Dataset2Sql"
+description = "Intert XML serialized datasets into MSSQL DBs"
+version = "0.2.0"    # keep in sync with your release version
+repository = "https://github.com/FelixDamrau/Dataset2Sql"
+license = "GPLv3"
+binaries = ["Dataset2Sql"]
+build-command = ["dotnet", "publish", "src/Dataset2Sql/Dataset2Sql.csproj", "--configuration", "Release"]
+
+[package.metadata.wix]
+upgrade-guid = "F5F5CB04-080D-4C43-BB38-F9711FD7F3FA"
+path-guid = "BA6377D7-49C5-4270-943D-E101E1556A50"
+license = false
+eula = false
+
+# Config for 'dist'
+[dist]
+# The preferred dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.30.3"
+# CI backends to support
+ci = "github"
+# The installers to generate for each app
+installers = ["shell", "powershell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
+# Whether to install an updater program
+install-updater = true
