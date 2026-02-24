@@ -10,12 +10,6 @@ license = "GPLv3"
 binaries = ["Dataset2Sql"]
 build-command = ["./scripts/dist-build.sh"]
 
-[package.metadata.wix]
-upgrade-guid = "F5F5CB04-080D-4C43-BB38-F9711FD7F3FA"
-path-guid = "BA6377D7-49C5-4270-943D-E101E1556A50"
-license = false
-eula = false
-
 # Config for 'dist'
 [dist]
 # The preferred dist version to use in CI (Cargo.toml SemVer syntax)
