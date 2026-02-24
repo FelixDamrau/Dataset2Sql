@@ -26,6 +26,8 @@ dotnet publish src/Dataset2Sql/Dataset2Sql.csproj \
   /p:IncludeNativeLibrariesForSelfExtract=true \
   /p:PublishReadyToRun=true \
   /p:EnableCompressionInSingleFile=true \
+  /p:DebugType=embedded \
+  /p:DebugSymbols=true \
   -o "${out_dir}"
 
 cp "${out_dir}/${exe}" "./${exe}"
