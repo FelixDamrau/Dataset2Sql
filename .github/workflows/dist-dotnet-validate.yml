@@ -1,0 +1,15 @@
+name: Dist Dotnet Validate
+on:
+  workflow_call:
+    inputs:
+      plan:
+        required: true
+        type: string
+jobs:
+  validate:
+    uses: ./.github/workflows/dotnet-common.yml
+    with:
+      create_release: false
+      enforce_format: false
+      publish_output: publish
+    secrets: inherit
