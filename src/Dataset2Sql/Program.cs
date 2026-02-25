@@ -8,18 +8,26 @@ public class Program
 {
     public static int Main(string[] args)
     {
-        ShowVersionScreen();
+        var routedArgs = args.Length == 0 ? ["import"] : args;
 
-        var app = new CommandApp<ImportCommand>();
+        var app = new CommandApp();
         app.Configure(config =>
         {
             config.SetApplicationName("Dataset2Sql");
             config.Settings.StrictParsing = true;
+            config.AddCommand<ImportCommand>("import");
+            config.AddBranch("config", branch =>
+            {
+                branch.AddCommand<ConfigInitCommand>("init");
+                branch.AddCommand<ConfigPathCommand>("path");
+            });
             config.ValidateExamples();
-            config.AddExample(["--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
+            config.AddExample(["import", "--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
+            config.AddExample(["config", "path"]);
+            config.AddExample(["config", "init"]);
         });
 
-        var exitCode = app.Run(args);
+        var exitCode = app.Run(routedArgs);
 
         if (ShouldPauseOnExit(args, Console.IsInputRedirected, Console.IsOutputRedirected))
         {
@@ -33,7 +41,7 @@ public class Program
     internal static bool ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected)
         => args.Length == 0 && !isInputRedirected && !isOutputRedirected;
 
-    private static void ShowVersionScreen()
+    internal static void ShowVersionScreen()
     {
         var version = Assembly.GetExecutingAssembly()!.GetName().Version;
         var versionText = $"Dataset2Sql v{version}";

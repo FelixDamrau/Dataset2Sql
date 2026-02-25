@@ -19,8 +19,8 @@
     <PackageReference Include="Spectre.Console.Cli" Version="0.53.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="appsettings.json">
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <Content Include="dataset2sql.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

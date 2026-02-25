@@ -10,11 +10,21 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
 {
     public override int Execute(CommandContext context, ImportCommandSettings settings, CancellationToken cancellationToken)
     {
+        Program.ShowVersionScreen();
+
         try
         {
+            var configPath = AppConfig.GetConfigPath();
+            if (!File.Exists(configPath))
+            {
+                Log.Error($"Configuration file not found: '{configPath}'.");
+                Log.Info($"Run '{AppConfig.GetExecutableCommandName()} config init' to create it next to the executable.");
+                Log.Info($"Config path: '{configPath}'");
+                return 1;
+            }
+
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile(configPath, optional: false)
                 .Build();
 
             var dbSettings = new DatabaseSettings();
