@@ -1,6 +1,6 @@
 using Spectre.Console.Cli;
 
-namespace Develix.Dataset2Sql;
+namespace Develix.Dataset2Sql.Cli.Commands;
 
 public sealed class ConfigInitCommand : Command<ConfigInitCommandSettings>
 {

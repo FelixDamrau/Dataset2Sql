@@ -1,4 +1,5 @@
 using System.Reflection;
+using Develix.Dataset2Sql.Cli.Commands;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -22,6 +23,7 @@ public class Program
                 branch.AddCommand<ConfigPathCommand>("path");
             });
             config.ValidateExamples();
+            config.AddExample();
             config.AddExample(["import", "--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
             config.AddExample(["config", "path"]);
             config.AddExample(["config", "init"]);
