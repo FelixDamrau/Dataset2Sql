@@ -10,12 +10,12 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
 
     public override int Execute(CommandContext context, ImportCommandSettings settings, CancellationToken cancellationToken)
     {
-        var options = new ImportExecutionOptions(settings.XmlFilePath, settings.DatabaseName, settings.AutoConfirmDrop);
+        var options = new ImportExecutionOptions(settings.XmlFilePath, settings.DatabaseName);
         var callbacks = new ImportExecutionCallbacks(
             Console.IsInputRedirected,
             PromptForXmlPath,
             PromptForDbName,
-            ConfirmDatabaseDrop);
+            dbName => ConfirmDatabaseDrop(dbName, settings.AutoConfirmDrop));
 
         return importCommandHandler.Execute(options, callbacks);
     }
@@ -56,13 +56,9 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
 
     private static bool ConfirmDatabaseDrop(string dbName, bool autoConfirmDrop)
     {
-        if (autoConfirmDrop)
-        {
-            Log.Info($"'{dbName}' already exists. Dropping automatically because --yes was provided.");
-            return true;
-        }
+        if (!autoConfirmDrop)
+            Log.Warn($"Database '{dbName}' already exists.");
 
-        Log.Warn($"Database '{dbName}' already exists.");
         var isConfirmed = DropConfirmationPolicy.ShouldDrop(
             dbName,
             autoConfirmDrop,
@@ -73,6 +69,9 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
             Log.Info("Database drop not confirmed. Exiting.");
             return false;
         }
+
+        if (autoConfirmDrop)
+            Log.Info($"'{dbName}' already exists. Dropping automatically because --yes was provided.");
 
         return true;
 

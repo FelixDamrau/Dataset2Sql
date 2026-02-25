@@ -13,6 +13,7 @@ public class Program
         var app = new CommandApp();
         app.Configure(config =>
         {
+            config.SetExceptionHandler((ex, _) => HandleUnhandledException(ex));
             config.SetApplicationName("Dataset2Sql");
             config.Settings.StrictParsing = true;
             config.AddCommand<ImportCommand>("import");
@@ -41,4 +42,10 @@ public class Program
 
     internal static bool ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected)
         => args.Length == 0 && !isInputRedirected && !isOutputRedirected;
+
+    private static int HandleUnhandledException(Exception ex)
+    {
+        AnsiConsole.WriteException(ex, ExceptionFormats.ShortenPaths);
+        return 1;
+    }
 }

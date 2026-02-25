@@ -15,7 +15,7 @@ public class ImportCommandHandlerTests
             _ => throw new InvalidOperationException("should not run workflow"));
 
         var exitCode = handler.Execute(
-            new ImportExecutionOptions("./dump.xml", "DumpDb", AutoConfirmDrop: true),
+            new ImportExecutionOptions("./dump.xml", "DumpDb"),
             BuildCallbacks());
 
         await Assert.That(exitCode).IsEqualTo(1);
@@ -36,7 +36,7 @@ public class ImportCommandHandlerTests
             });
 
         var exitCode = handler.Execute(
-            new ImportExecutionOptions("./missing.xml", "DumpDb", AutoConfirmDrop: false),
+            new ImportExecutionOptions("./missing.xml", "DumpDb"),
             BuildCallbacks());
 
         await Assert.That(exitCode).IsEqualTo(1);
@@ -53,7 +53,7 @@ public class ImportCommandHandlerTests
             _ => new DatasetImportResult { Status = DatasetImportStatus.Cancelled });
 
         var exitCode = handler.Execute(
-            new ImportExecutionOptions("./dump.xml", "DumpDb", AutoConfirmDrop: false),
+            new ImportExecutionOptions("./dump.xml", "DumpDb"),
             BuildCallbacks());
 
         await Assert.That(exitCode).IsEqualTo(0);
@@ -75,7 +75,7 @@ public class ImportCommandHandlerTests
             });
 
         var exitCode = handler.Execute(
-            new ImportExecutionOptions("./dump.xml", "DumpDb", AutoConfirmDrop: true),
+            new ImportExecutionOptions("./dump.xml", "DumpDb"),
             BuildCallbacks());
 
         await Assert.That(exitCode).IsEqualTo(0);
@@ -92,6 +92,6 @@ public class ImportCommandHandlerTests
             IsInputRedirected: true,
             PromptForXmlPath: () => "./prompt.xml",
             PromptForDatabaseName: defaultName => defaultName ?? "PromptDb",
-            ConfirmDatabaseDrop: (_, _) => true);
+            ConfirmDatabaseDrop: _ => true);
     }
 }

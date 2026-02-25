@@ -4,4 +4,4 @@ public sealed record ImportExecutionCallbacks(
     bool IsInputRedirected,
     Func<string> PromptForXmlPath,
     Func<string?, string> PromptForDatabaseName,
-    Func<string, bool, bool> ConfirmDatabaseDrop);
+    Func<string, bool> ConfirmDatabaseDrop);

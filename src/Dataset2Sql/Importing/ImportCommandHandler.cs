@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace Develix.Dataset2Sql.Importing;
@@ -40,69 +39,47 @@ public sealed class ImportCommandHandler
 
     public int Execute(ImportExecutionOptions options, ImportExecutionCallbacks callbacks)
     {
-        try
+        var configPath = getConfigPath();
+        if (!fileExists(configPath))
         {
-            var configPath = getConfigPath();
-            if (!fileExists(configPath))
-            {
-                Log.Error($"Configuration file not found: '{configPath}'.");
-                Log.Info($"Run '{getExecutableCommandName()} config init' to create it next to the executable.");
-                Log.Info($"Config path: '{configPath}'");
-                return 1;
-            }
+            Log.Error($"Configuration file not found: '{configPath}'.");
+            Log.Info($"Run '{getExecutableCommandName()} config init' to create it next to the executable.");
+            Log.Info($"Config path: '{configPath}'");
+            return 1;
+        }
 
-            var dbSettings = loadDatabaseSettings(configPath);
-            var xmlFilePath = XmlPathResolver.Resolve(
-                options.XmlFilePath,
-                callbacks.IsInputRedirected,
-                callbacks.PromptForXmlPath);
-            var dbName = DatabaseNameResolver.Resolve(
-                options.DatabaseName,
-                dbSettings.Name,
-                callbacks.IsInputRedirected,
-                callbacks.PromptForDatabaseName);
+        var dbSettings = loadDatabaseSettings(configPath);
+        var xmlFilePath = XmlPathResolver.Resolve(
+            options.XmlFilePath,
+            callbacks.IsInputRedirected,
+            callbacks.PromptForXmlPath);
+        var dbName = DatabaseNameResolver.Resolve(
+            options.DatabaseName,
+            dbSettings.Name,
+            callbacks.IsInputRedirected,
+            callbacks.PromptForDatabaseName);
 
-            var request = new DatasetImportRequest(
-                xmlFilePath,
-                dbName,
-                dbSettings,
-                databaseName => callbacks.ConfirmDatabaseDrop(databaseName, options.AutoConfirmDrop));
-            var result = runImportWorkflow(request);
+        var request = new DatasetImportRequest(
+            xmlFilePath,
+            dbName,
+            dbSettings,
+            callbacks.ConfirmDatabaseDrop);
+        var result = runImportWorkflow(request);
 
-            if (result.Status == DatasetImportStatus.FileNotFound)
-            {
-                Log.Error($"File not found at '{result.MissingFilePath}'.");
-                return 1;
-            }
+        if (result.Status == DatasetImportStatus.FileNotFound)
+        {
+            Log.Error($"File not found at '{result.MissingFilePath}'.");
+            return 1;
+        }
 
-            if (result.Status == DatasetImportStatus.Cancelled)
-            {
-                Log.Info("Import canceled by user.");
-                return 0;
-            }
-
-            Log.Info("Import completed successfully.");
+        if (result.Status == DatasetImportStatus.Cancelled)
+        {
+            Log.Info("Import canceled by user.");
             return 0;
         }
-        catch (SqlException ex)
-        {
-            Log.Error($"SQL error ({ex.Number}): {ex.Message}");
-            if (ex.InnerException != null)
-                Log.Error($"Inner exception: {ex.InnerException.Message}");
-            return 1;
-        }
-        catch (IOException ex)
-        {
-            Log.Error($"I/O error: {ex.Message}");
-            return 1;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.Message);
-            if (ex.InnerException != null)
-                Log.Error($"Inner exception: {ex.InnerException.Message}");
-            return 1;
-        }
+
+        Log.Info("Import completed successfully.");
+        return 0;
     }
 
     private static DatabaseSettings LoadDatabaseSettings(string configPath)
