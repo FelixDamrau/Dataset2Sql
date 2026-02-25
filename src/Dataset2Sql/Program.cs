@@ -1,5 +1,4 @@
-using System.Reflection;
-using Develix.Dataset2Sql.Cli.Commands;
+using Develix.Dataset2Sql.Cli;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -42,25 +41,4 @@ public class Program
 
     internal static bool ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected)
         => args.Length == 0 && !isInputRedirected && !isOutputRedirected;
-
-    internal static void ShowVersionScreen()
-    {
-        var version = Assembly.GetExecutingAssembly()!.GetName().Version;
-        var versionText = $"Dataset2Sql v{version}";
-
-        if (Console.IsOutputRedirected)
-        {
-            Console.WriteLine(versionText);
-            return;
-        }
-
-        var panel = new Panel($"[bold]{Markup.Escape(versionText)}[/]")
-        {
-            Border = BoxBorder.Rounded,
-            BorderStyle = new Style(Color.Grey),
-            Padding = new Padding(1, 0, 1, 0)
-        };
-
-        AnsiConsole.Write(panel);
-    }
 }

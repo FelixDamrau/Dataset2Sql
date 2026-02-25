@@ -2,7 +2,7 @@ using Develix.Dataset2Sql.Importing;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace Develix.Dataset2Sql.Cli.Commands;
+namespace Develix.Dataset2Sql.Cli;
 
 public sealed class ImportCommand : Command<ImportCommandSettings>
 {
@@ -10,8 +10,6 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
 
     public override int Execute(CommandContext context, ImportCommandSettings settings, CancellationToken cancellationToken)
     {
-        Program.ShowVersionScreen();
-
         var options = new ImportExecutionOptions(settings.XmlFilePath, settings.DatabaseName, settings.AutoConfirmDrop);
         var callbacks = new ImportExecutionCallbacks(
             Console.IsInputRedirected,
