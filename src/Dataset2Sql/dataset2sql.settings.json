@@ -1,0 +1,8 @@
+{
+  "DatabaseSettings": {
+    "Server": "localhost",
+    "Name": "DumpDb",
+    "Username": "dbUser",
+    "Password": "userPass"
+  }
+}

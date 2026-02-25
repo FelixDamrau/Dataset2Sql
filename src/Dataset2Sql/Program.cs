@@ -1,4 +1,4 @@
-using System.Reflection;
+using Develix.Dataset2Sql.Cli;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -8,18 +8,28 @@ public class Program
 {
     public static int Main(string[] args)
     {
-        ShowVersionScreen();
+        var routedArgs = args.Length == 0 ? ["import"] : args;
 
-        var app = new CommandApp<ImportCommand>();
+        var app = new CommandApp();
         app.Configure(config =>
         {
+            config.SetExceptionHandler((ex, _) => HandleUnhandledException(ex));
             config.SetApplicationName("Dataset2Sql");
             config.Settings.StrictParsing = true;
+            config.AddCommand<ImportCommand>("import");
+            config.AddBranch("config", branch =>
+            {
+                branch.AddCommand<ConfigInitCommand>("init");
+                branch.AddCommand<ConfigPathCommand>("path");
+            });
             config.ValidateExamples();
-            config.AddExample(["--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
+            config.AddExample();
+            config.AddExample(["import", "--xml", "./dump.xml", "--db", "DumpDb", "--yes"]);
+            config.AddExample(["config", "path"]);
+            config.AddExample(["config", "init"]);
         });
 
-        var exitCode = app.Run(args);
+        var exitCode = app.Run(routedArgs);
 
         if (ShouldPauseOnExit(args, Console.IsInputRedirected, Console.IsOutputRedirected))
         {
@@ -33,24 +43,9 @@ public class Program
     internal static bool ShouldPauseOnExit(string[] args, bool isInputRedirected, bool isOutputRedirected)
         => args.Length == 0 && !isInputRedirected && !isOutputRedirected;
 
-    private static void ShowVersionScreen()
+    private static int HandleUnhandledException(Exception ex)
     {
-        var version = Assembly.GetExecutingAssembly()!.GetName().Version;
-        var versionText = $"Dataset2Sql v{version}";
-
-        if (Console.IsOutputRedirected)
-        {
-            Console.WriteLine(versionText);
-            return;
-        }
-
-        var panel = new Panel($"[bold]{Markup.Escape(versionText)}[/]")
-        {
-            Border = BoxBorder.Rounded,
-            BorderStyle = new Style(Color.Grey),
-            Padding = new Padding(1, 0, 1, 0)
-        };
-
-        AnsiConsole.Write(panel);
+        AnsiConsole.WriteException(ex, ExceptionFormats.ShortenPaths);
+        return 1;
     }
 }

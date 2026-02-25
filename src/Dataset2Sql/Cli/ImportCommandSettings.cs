@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace Develix.Dataset2Sql;
+namespace Develix.Dataset2Sql.Cli;
 
 public sealed class ImportCommandSettings : CommandSettings
 {
