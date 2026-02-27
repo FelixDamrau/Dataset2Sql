@@ -30,7 +30,7 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
 
     private bool CreateDatabase(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback)
     {
-        if (SystemDatabases.Contains(dbName, StringComparer.OrdinalIgnoreCase))
+        if (systemDatabases.Contains(dbName, StringComparer.OrdinalIgnoreCase))
         {
             Log.Error($"Cannot drop or recreate system database '{dbName}'.");
             return false;
