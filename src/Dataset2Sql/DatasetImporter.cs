@@ -6,6 +6,7 @@ namespace Develix.Dataset2Sql;
 public class DatasetImporter(SqlCommandBuilder commandBuilder)
 {
     private readonly SqlCommandBuilder commandBuilder = commandBuilder;
+    private static readonly string[] systemDatabases = ["master", "model", "msdb", "tempdb"];
 
     public bool ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
     {
@@ -29,6 +30,12 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
 
     private bool CreateDatabase(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback)
     {
+        if (systemDatabases.Contains(dbName, StringComparer.OrdinalIgnoreCase))
+        {
+            Log.Error($"Cannot drop or recreate system database '{dbName}'.");
+            return false;
+        }
+
         using SqlConnection masterConnection = new(masterConnectionString);
         masterConnection.Open();
 
