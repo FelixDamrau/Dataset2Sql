@@ -14,7 +14,7 @@ public class DatasetImportWorkflowTests
         var importer = new FakeDatasetImportExecutor();
         var workflow = new DatasetImportWorkflow(fileSystem, reader, importer);
 
-        var result = workflow.Run(BuildRequest(xmlPath: "./missing.xml"));
+        var result = await workflow.RunAsync(BuildRequest(xmlPath: "./missing.xml"));
 
         await Assert.That(result.Status).IsEqualTo(DatasetImportStatus.FileNotFound);
         await Assert.That(result.MissingFilePath).IsEqualTo("./missing.xml");
@@ -30,7 +30,7 @@ public class DatasetImportWorkflowTests
         var importer = new FakeDatasetImportExecutor { ReturnValue = true };
         var workflow = new DatasetImportWorkflow(fileSystem, reader, importer);
 
-        var result = workflow.Run(BuildRequest(dbName: "DumpDb"));
+        var result = await workflow.RunAsync(BuildRequest(dbName: "DumpDb"));
 
         await Assert.That(result.Status).IsEqualTo(DatasetImportStatus.Completed);
         await Assert.That(importer.CallCount).IsEqualTo(1);
@@ -47,7 +47,7 @@ public class DatasetImportWorkflowTests
         var importer = new FakeDatasetImportExecutor { ReturnValue = false };
         var workflow = new DatasetImportWorkflow(fileSystem, reader, importer);
 
-        var result = workflow.Run(BuildRequest());
+        var result = await workflow.RunAsync(BuildRequest());
 
         await Assert.That(result.Status).IsEqualTo(DatasetImportStatus.Cancelled);
     }
@@ -60,7 +60,7 @@ public class DatasetImportWorkflowTests
         var importer = new FakeDatasetImportExecutor();
         var workflow = new DatasetImportWorkflow(fileSystem, reader, importer);
 
-        DatasetImportResult workflowAction() => workflow.Run(BuildRequest());
+        Task workflowAction() => workflow.RunAsync(BuildRequest());
 
         await Assert.That(workflowAction).Throws<IOException>();
     }
@@ -75,7 +75,7 @@ public class DatasetImportWorkflowTests
             Name = "ConfigDb"
         };
 
-        return new DatasetImportRequest(xmlPath, dbName, settings, _ => true);
+        return new DatasetImportRequest(xmlPath, dbName, settings, _ => true, CancellationToken.None);
     }
 
     private sealed class FakeFileSystem(bool exists) : IFileSystem
@@ -88,7 +88,7 @@ public class DatasetImportWorkflowTests
         public int CallCount { get; private set; }
         public Exception? ExceptionToThrow { get; init; }
 
-        public DataSet Read(string xmlPath)
+        public Task<DataSet> ReadAsync(string xmlPath, CancellationToken cancellationToken)
         {
             CallCount++;
             if (ExceptionToThrow != null)
@@ -101,7 +101,7 @@ public class DatasetImportWorkflowTests
             table.Columns.Add("Id", typeof(int));
             table.Rows.Add(1);
             dataSet.Tables.Add(table);
-            return dataSet;
+            return Task.FromResult(dataSet);
         }
     }
 
@@ -111,15 +111,16 @@ public class DatasetImportWorkflowTests
         public int CallCount { get; private set; }
         public SqlConnectionStringBuilder? LastConnectionStringBuilder { get; private set; }
 
-        public bool Import(
+        public Task<bool> ImportAsync(
             DataSet dataSet,
             SqlConnectionStringBuilder connectionStringBuilder,
             string dbName,
-            Func<string, bool> confirmDropCallback)
+            Func<string, bool> confirmDropCallback,
+            CancellationToken cancellationToken)
         {
             CallCount++;
             LastConnectionStringBuilder = connectionStringBuilder;
-            return ReturnValue;
+            return Task.FromResult(ReturnValue);
         }
     }
 }

@@ -4,10 +4,13 @@ namespace Develix.Dataset2Sql.Importing;
 
 public sealed class XmlDataSetReader : IDataSetXmlReader
 {
-    public DataSet Read(string xmlPath)
+    public async Task<DataSet> ReadAsync(string xmlPath, CancellationToken cancellationToken)
     {
-        var dataSet = new DataSet();
-        dataSet.ReadXml(xmlPath);
-        return dataSet;
+        return await Task.Run(() =>
+        {
+            var dataSet = new DataSet();
+            dataSet.ReadXml(xmlPath);
+            return dataSet;
+        }, cancellationToken);
     }
 }

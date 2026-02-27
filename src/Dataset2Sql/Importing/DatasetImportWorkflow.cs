@@ -8,7 +8,7 @@ public sealed class DatasetImportWorkflow(IFileSystem fileSystem, IDataSetXmlRea
     private readonly IDataSetXmlReader dataSetXmlReader = dataSetXmlReader;
     private readonly IDatasetImportExecutor datasetImportExecutor = datasetImportExecutor;
 
-    public DatasetImportResult Run(DatasetImportRequest request)
+    public async Task<DatasetImportResult> RunAsync(DatasetImportRequest request)
     {
         if (!fileSystem.FileExists(request.XmlFilePath))
             return new DatasetImportResult { Status = DatasetImportStatus.FileNotFound, MissingFilePath = request.XmlFilePath };
@@ -22,8 +22,8 @@ public sealed class DatasetImportWorkflow(IFileSystem fileSystem, IDataSetXmlRea
             Password = request.DatabaseSettings.Password
         };
 
-        var dataSet = dataSetXmlReader.Read(request.XmlFilePath);
-        var importCompleted = datasetImportExecutor.Import(dataSet, connectionStringBuilder, request.DatabaseName, request.ConfirmDropCallback);
+        var dataSet = await Log.StatusAsync("Reading XML...", () => dataSetXmlReader.ReadAsync(request.XmlFilePath, request.CancellationToken));
+        var importCompleted = await datasetImportExecutor.ImportAsync(dataSet, connectionStringBuilder, request.DatabaseName, request.ConfirmDropCallback, request.CancellationToken);
 
         return importCompleted
             ? new DatasetImportResult { Status = DatasetImportStatus.Completed }

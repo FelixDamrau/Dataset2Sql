@@ -8,27 +8,30 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
     private readonly SqlCommandBuilder commandBuilder = commandBuilder;
     private static readonly string[] systemDatabases = ["master", "model", "msdb", "tempdb"];
 
-    public bool ImportDatasetToSqlServer(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
+    public async Task<bool> ImportDatasetToSqlServerAsync(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback, CancellationToken cancellationToken)
     {
         var connectionString = connectionStringBuilder.ToString();
         var masterConnectionString = new SqlConnectionStringBuilder(connectionString) { InitialCatalog = "master" }.ToString();
 
-        if (!CreateDatabase(dbName, masterConnectionString, confirmDropCallback))
-            return false;
+        return await CreateDatabaseAsync(dbName, masterConnectionString, confirmDropCallback, cancellationToken)
+            && await Log.StatusAsync($"Importing {dataSet.Tables.Count} tables to database '{dbName}'...", ImportTableAsync);
 
-        using SqlConnection connection = new(connectionString);
-        connection.Open();
-
-        foreach (DataTable table in dataSet.Tables)
+        async Task<bool> ImportTableAsync()
         {
-            CreateTable(table, connection);
-            ImportTableData(table, connection);
-        }
+            using SqlConnection connection = new(connectionString);
+            await connection.OpenAsync(cancellationToken);
 
-        return true;
+            foreach (DataTable table in dataSet.Tables)
+            {
+                await CreateTableAsync(table, connection, cancellationToken);
+                await ImportTableDataAsync(table, connection, cancellationToken);
+            }
+
+            return true;
+        }
     }
 
-    private bool CreateDatabase(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback)
+    private async Task<bool> CreateDatabaseAsync(string dbName, string masterConnectionString, Func<string, bool> confirmDropCallback, CancellationToken cancellationToken)
     {
         if (systemDatabases.Contains(dbName, StringComparer.OrdinalIgnoreCase))
         {
@@ -37,12 +40,12 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
         }
 
         using SqlConnection masterConnection = new(masterConnectionString);
-        masterConnection.Open();
+        await masterConnection.OpenAsync(cancellationToken);
 
         var checkDbQuery = "SELECT COUNT(*) FROM sys.databases WHERE name = @name";
         using var checkDbCmd = new SqlCommand(checkDbQuery, masterConnection);
         checkDbCmd.Parameters.AddWithValue("@name", dbName);
-        var dbCount = (int)checkDbCmd.ExecuteScalar();
+        var dbCount = (int)(await checkDbCmd.ExecuteScalarAsync(cancellationToken))!;
 
         if (dbCount > 0)
         {
@@ -52,24 +55,24 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
             var safeDbName = SanitizeIdentifier(dbName);
             var dropDbQuery = $"ALTER DATABASE {safeDbName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE {safeDbName}";
             using var dropDbCmd = new SqlCommand(dropDbQuery, masterConnection);
-            dropDbCmd.ExecuteNonQuery();
+            await Log.StatusAsync($"Dropping database '{dbName}'...", async () => await dropDbCmd.ExecuteNonQueryAsync(cancellationToken));
         }
 
         var safeDbNameForCreate = SanitizeIdentifier(dbName);
         var createDbQuery = $"CREATE DATABASE {safeDbNameForCreate}";
         using var createDbCmd = new SqlCommand(createDbQuery, masterConnection);
-        createDbCmd.ExecuteNonQuery();
+        await Log.StatusAsync($"Creating database '{dbName}'...", async () => await createDbCmd.ExecuteNonQueryAsync(cancellationToken));
 
         Log.Info($"Database '{dbName}' created.");
         return true;
     }
 
-    private void CreateTable(DataTable table, SqlConnection connection)
+    private async Task CreateTableAsync(DataTable table, SqlConnection connection, CancellationToken cancellationToken)
     {
         var createTableQuery = CreateTableSqlBuilder.Build(table, SanitizeIdentifier, SqlTypeMapper.Map);
 
         using SqlCommand command = new(createTableQuery, connection);
-        command.ExecuteNonQuery();
+        await command.ExecuteNonQueryAsync(cancellationToken);
         Log.Info($"Table '{table.TableName}' created.");
     }
 
@@ -79,7 +82,7 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
         return commandBuilder.QuoteIdentifier(identifier);
     }
 
-    private static void ImportTableData(DataTable table, SqlConnection connection)
+    private static async Task ImportTableDataAsync(DataTable table, SqlConnection connection, CancellationToken cancellationToken)
     {
         using SqlBulkCopy bulkCopy = new(connection);
         bulkCopy.DestinationTableName = table.TableName;
@@ -87,7 +90,7 @@ public class DatasetImporter(SqlCommandBuilder commandBuilder)
         foreach (DataColumn column in table.Columns)
             bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
 
-        bulkCopy.WriteToServer(table);
+        await bulkCopy.WriteToServerAsync(table, cancellationToken);
         Log.Info($"Imported {table.Rows.Count} rows to table '{table.TableName}'.");
     }
 }

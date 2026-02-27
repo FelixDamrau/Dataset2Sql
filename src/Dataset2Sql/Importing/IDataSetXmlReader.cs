@@ -4,5 +4,5 @@ namespace Develix.Dataset2Sql.Importing;
 
 public interface IDataSetXmlReader
 {
-    DataSet Read(string xmlPath);
+    Task<DataSet> ReadAsync(string xmlPath, CancellationToken cancellationToken);
 }

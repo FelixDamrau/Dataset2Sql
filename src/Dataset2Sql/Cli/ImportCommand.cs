@@ -4,11 +4,11 @@ using Spectre.Console.Cli;
 
 namespace Develix.Dataset2Sql.Cli;
 
-public sealed class ImportCommand : Command<ImportCommandSettings>
+public sealed class ImportCommand : AsyncCommand<ImportCommandSettings>
 {
     private readonly ImportCommandHandler importCommandHandler = new();
 
-    public override int Execute(CommandContext context, ImportCommandSettings settings, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteAsync(CommandContext context, ImportCommandSettings settings, CancellationToken cancellationToken)
     {
         var options = new ImportExecutionOptions(settings.XmlFilePath, settings.DatabaseName);
         var callbacks = new ImportExecutionCallbacks(
@@ -17,7 +17,7 @@ public sealed class ImportCommand : Command<ImportCommandSettings>
             PromptForDbName,
             dbName => ConfirmDatabaseDrop(dbName, settings.AutoConfirmDrop));
 
-        return importCommandHandler.Execute(options, callbacks);
+        return await importCommandHandler.ExecuteAsync(options, callbacks, cancellationToken);
     }
 
     private static string PromptForXmlPath()

@@ -8,7 +8,7 @@ public sealed class ImportCommandHandler
     private readonly Func<string> getExecutableCommandName;
     private readonly Func<string, bool> fileExists;
     private readonly Func<string, DatabaseSettings> loadDatabaseSettings;
-    private readonly Func<DatasetImportRequest, DatasetImportResult> runImportWorkflow;
+    private readonly Func<DatasetImportRequest, Task<DatasetImportResult>> runImportWorkflow;
 
     public ImportCommandHandler()
         : this(
@@ -16,7 +16,7 @@ public sealed class ImportCommandHandler
             AppConfig.GetExecutableCommandName,
             File.Exists,
             LoadDatabaseSettings,
-            RunImportWorkflow)
+            RunImportWorkflowAsync)
     {
     }
 
@@ -28,7 +28,7 @@ public sealed class ImportCommandHandler
         Func<string> getExecutableCommandName,
         Func<string, bool> fileExists,
         Func<string, DatabaseSettings> loadDatabaseSettings,
-        Func<DatasetImportRequest, DatasetImportResult> runImportWorkflow)
+        Func<DatasetImportRequest, Task<DatasetImportResult>> runImportWorkflow)
     {
         this.getConfigPath = getConfigPath;
         this.getExecutableCommandName = getExecutableCommandName;
@@ -37,7 +37,7 @@ public sealed class ImportCommandHandler
         this.runImportWorkflow = runImportWorkflow;
     }
 
-    public int Execute(ImportExecutionOptions options, ImportExecutionCallbacks callbacks)
+    public async Task<int> ExecuteAsync(ImportExecutionOptions options, ImportExecutionCallbacks callbacks, CancellationToken cancellationToken)
     {
         var configPath = getConfigPath();
         if (!fileExists(configPath))
@@ -63,8 +63,9 @@ public sealed class ImportCommandHandler
             xmlFilePath,
             dbName,
             dbSettings,
-            callbacks.ConfirmDatabaseDrop);
-        var result = runImportWorkflow(request);
+            callbacks.ConfirmDatabaseDrop,
+            cancellationToken);
+        var result = await runImportWorkflow(request);
 
         if (result.Status == DatasetImportStatus.FileNotFound)
         {
@@ -93,9 +94,9 @@ public sealed class ImportCommandHandler
         return dbSettings;
     }
 
-    private static DatasetImportResult RunImportWorkflow(DatasetImportRequest request)
+    private static async Task<DatasetImportResult> RunImportWorkflowAsync(DatasetImportRequest request)
     {
         var workflow = new DatasetImportWorkflow(new PhysicalFileSystem(), new XmlDataSetReader(), new DatasetImporterExecutor());
-        return workflow.Run(request);
+        return await workflow.RunAsync(request);
     }
 }

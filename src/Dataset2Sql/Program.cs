@@ -6,7 +6,7 @@ namespace Develix.Dataset2Sql;
 
 public class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var routedArgs = args.Length == 0 ? ["import"] : args;
 
@@ -29,7 +29,7 @@ public class Program
             config.AddExample(["config", "init"]);
         });
 
-        var exitCode = app.Run(routedArgs);
+        var exitCode = await app.RunAsync(routedArgs);
 
         if (ShouldPauseOnExit(args, Console.IsInputRedirected, Console.IsOutputRedirected))
         {

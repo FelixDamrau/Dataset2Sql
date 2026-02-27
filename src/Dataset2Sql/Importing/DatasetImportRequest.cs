@@ -4,4 +4,5 @@ public sealed record DatasetImportRequest(
     string XmlFilePath,
     string DatabaseName,
     DatabaseSettings DatabaseSettings,
-    Func<string, bool> ConfirmDropCallback);
+    Func<string, bool> ConfirmDropCallback,
+    CancellationToken CancellationToken);

@@ -5,10 +5,10 @@ namespace Develix.Dataset2Sql.Importing;
 
 public sealed class DatasetImporterExecutor : IDatasetImportExecutor
 {
-    public bool Import(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback)
+    public async Task<bool> ImportAsync(DataSet dataSet, SqlConnectionStringBuilder connectionStringBuilder, string dbName, Func<string, bool> confirmDropCallback, CancellationToken cancellationToken)
     {
         using var commandBuilder = new SqlCommandBuilder();
         var importer = new DatasetImporter(commandBuilder);
-        return importer.ImportDatasetToSqlServer(dataSet, connectionStringBuilder, dbName, confirmDropCallback);
+        return await importer.ImportDatasetToSqlServerAsync(dataSet, connectionStringBuilder, dbName, confirmDropCallback, cancellationToken);
     }
 }

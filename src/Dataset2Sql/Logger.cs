@@ -8,6 +8,17 @@ public static class Log
     public static void Warn(string message) => LogInternal(message, "WARN", "yellow");
     public static void Error(string message) => LogInternal(message, "ERROR", "red");
 
+    public static Task<T> StatusAsync<T>(string status, Func<Task<T>> action)
+    {
+        if (Console.IsOutputRedirected)
+        {
+            Info(status);
+            return action();
+        }
+
+        return AnsiConsole.Status().StartAsync(status, _ => action());
+    }
+
     private static void LogInternal(string message, string level, string color)
     {
         var timestamp = DateTimeOffset.Now.ToString("s");

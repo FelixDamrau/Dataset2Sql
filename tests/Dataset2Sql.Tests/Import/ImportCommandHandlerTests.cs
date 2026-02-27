@@ -12,11 +12,12 @@ public class ImportCommandHandlerTests
             () => "dataset2sql",
             _ => false,
             _ => throw new InvalidOperationException("should not load config"),
-            _ => throw new InvalidOperationException("should not run workflow"));
+            _ => Task.FromException<DatasetImportResult>(new InvalidOperationException("should not run workflow")));
 
-        var exitCode = handler.Execute(
+        var exitCode = await handler.ExecuteAsync(
             new ImportExecutionOptions("./dump.xml", "DumpDb"),
-            BuildCallbacks());
+            BuildCallbacks(),
+            CancellationToken.None);
 
         await Assert.That(exitCode).IsEqualTo(1);
     }
@@ -29,15 +30,16 @@ public class ImportCommandHandlerTests
             () => "dataset2sql",
             _ => true,
             _ => BuildDbSettings(),
-            request => new DatasetImportResult
+            request => Task.FromResult(new DatasetImportResult
             {
                 Status = DatasetImportStatus.FileNotFound,
                 MissingFilePath = request.XmlFilePath
-            });
+            }));
 
-        var exitCode = handler.Execute(
+        var exitCode = await handler.ExecuteAsync(
             new ImportExecutionOptions("./missing.xml", "DumpDb"),
-            BuildCallbacks());
+            BuildCallbacks(),
+            CancellationToken.None);
 
         await Assert.That(exitCode).IsEqualTo(1);
     }
@@ -50,11 +52,12 @@ public class ImportCommandHandlerTests
             () => "dataset2sql",
             _ => true,
             _ => BuildDbSettings(),
-            _ => new DatasetImportResult { Status = DatasetImportStatus.Cancelled });
+            _ => Task.FromResult(new DatasetImportResult { Status = DatasetImportStatus.Cancelled }));
 
-        var exitCode = handler.Execute(
+        var exitCode = await handler.ExecuteAsync(
             new ImportExecutionOptions("./dump.xml", "DumpDb"),
-            BuildCallbacks());
+            BuildCallbacks(),
+            CancellationToken.None);
 
         await Assert.That(exitCode).IsEqualTo(0);
     }
@@ -71,12 +74,13 @@ public class ImportCommandHandlerTests
             request =>
             {
                 capturedRequest = request;
-                return new DatasetImportResult { Status = DatasetImportStatus.Completed };
+                return Task.FromResult(new DatasetImportResult { Status = DatasetImportStatus.Completed });
             });
 
-        var exitCode = handler.Execute(
+        var exitCode = await handler.ExecuteAsync(
             new ImportExecutionOptions("./dump.xml", "DumpDb"),
-            BuildCallbacks());
+            BuildCallbacks(),
+            CancellationToken.None);
 
         await Assert.That(exitCode).IsEqualTo(0);
         await Assert.That(capturedRequest).IsNotNull();
