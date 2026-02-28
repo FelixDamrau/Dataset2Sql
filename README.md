@@ -6,7 +6,7 @@
 
 _Insert XML serialized datasets into MSSQL DBs._
 
-`DataSet2Sql` is a fast, interactive CLI tool that reads .NET `DataSet`s serialized as XML and automatically recreates them in a Microsoft SQL Server database. 
+`DataSet2Sql` is a fast, interactive CLI tool that reads .NET `DataSet`s serialized as XML and automatically recreates them in a Microsoft SQL Server database.
 
 It handles table creation, data type mapping, and fast data insertion using `SqlBulkCopy`, allowing you to quickly restore datasets without writing manual SQL scripts.
 
@@ -36,11 +36,11 @@ curl --proto '=https' --tlsv1.2 -LsSf https://github.com/FelixDamrau/DataSet2Sql
 
 Run `DataSet2Sql config init` to create a default config file. This file stores your target MSSQL connection details.
 
-| Platform | Path                                                    |
-| -------- | ------------------------------------------------------- |
-| Linux    | `~/.config/DataSet2Sql/dataset2sql.settings.json`       |
+| Platform | Path                                                                  |
+| -------- | --------------------------------------------------------------------- |
+| Linux    | `~/.config/DataSet2Sql/dataset2sql.settings.json`                     |
 | macOS    | `~/Library/Application Support/DataSet2Sql/dataset2sql.settings.json` |
-| Windows  | `%APPDATA%\DataSet2Sql\dataset2sql.settings.json`       |
+| Windows  | `%APPDATA%\DataSet2Sql\dataset2sql.settings.json`                     |
 
 Example config:
 
@@ -56,6 +56,7 @@ Example config:
 ```
 
 Find your active config path anytime by running:
+
 ```bash
 DataSet2Sql config path
 ```
@@ -63,13 +64,17 @@ DataSet2Sql config path
 ## Usage
 
 ### 1. Interactive Mode
+
 Run the tool without arguments to enter the interactive prompt:
+
 ```bash
 DataSet2Sql
 ```
 
 ### 2. Fast Import
-Pass arguments directly for CI/CD or automation:
+
+Or just pass arguments via the CLI:
+
 ```bash
 DataSet2Sql import --xml ./dump.xml --db MyDatabase --yes
 ```
