@@ -13,6 +13,7 @@ public class Program
         var app = new CommandApp();
         app.Configure(config =>
         {
+            config.SetHelpProvider(new CustomHelpProvider(config.Settings));
             config.SetExceptionHandler((ex, _) => HandleUnhandledException(ex));
             config.SetApplicationName("DataSet2Sql");
             config.Settings.StrictParsing = true;
