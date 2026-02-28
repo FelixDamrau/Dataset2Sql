@@ -65,7 +65,17 @@ public sealed class ImportCommandHandler
             dbSettings,
             callbacks.ConfirmDatabaseDrop,
             cancellationToken);
-        var result = await runImportWorkflow(request);
+
+        DatasetImportResult result;
+        try
+        {
+            result = await runImportWorkflow(request);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            Log.Info("Import canceled.");
+            return 0;
+        }
 
         if (result.Status == DatasetImportStatus.FileNotFound)
         {

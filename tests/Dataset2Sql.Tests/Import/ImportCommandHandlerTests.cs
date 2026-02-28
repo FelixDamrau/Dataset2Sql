@@ -63,6 +63,27 @@ public class ImportCommandHandlerTests
     }
 
     [Test]
+    public async Task Execute_WhenCancellationRequestedDuringWorkflow_ThenReturnsZero()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        var handler = new ImportCommandHandler(
+            () => "./dataset2sql.settings.json",
+            () => "dataset2sql",
+            _ => true,
+            _ => BuildDbSettings(),
+            _ => Task.FromCanceled<DatasetImportResult>(cancellationTokenSource.Token));
+
+        var exitCode = await handler.ExecuteAsync(
+            new ImportExecutionOptions("./dump.xml", "DumpDb"),
+            BuildCallbacks(),
+            cancellationTokenSource.Token);
+
+        await Assert.That(exitCode).IsEqualTo(0);
+    }
+
+    [Test]
     public async Task Execute_WhenWorkflowReturnsCompleted_ThenReturnsZero()
     {
         DatasetImportRequest? capturedRequest = null;

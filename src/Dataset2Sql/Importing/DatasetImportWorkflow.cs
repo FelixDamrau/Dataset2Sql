@@ -22,7 +22,7 @@ public sealed class DatasetImportWorkflow(IFileSystem fileSystem, IDataSetXmlRea
             Password = request.DatabaseSettings.Password
         };
 
-        var dataSet = await Log.StatusAsync("Reading XML...", () => dataSetXmlReader.ReadAsync(request.XmlFilePath, request.CancellationToken));
+        var dataSet = await dataSetXmlReader.ReadAsync(request.XmlFilePath, request.CancellationToken);
         var importCompleted = await datasetImportExecutor.ImportAsync(dataSet, connectionStringBuilder, request.DatabaseName, request.ConfirmDropCallback, request.CancellationToken);
 
         return importCompleted
