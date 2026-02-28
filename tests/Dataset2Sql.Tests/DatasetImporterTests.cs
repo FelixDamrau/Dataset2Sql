@@ -18,7 +18,12 @@ public class DatasetImporterTests
         var importer = new DatasetImporter(commandBuilder);
         var dataSet = new DataSet();
 
-        var result = importer.ImportDatasetToSqlServer(dataSet, connectionStringBuilder: new(), dbName, confirmDropCallback: _ => true);
+        var result = await importer.ImportDatasetToSqlServerAsync(
+            dataSet,
+            connectionStringBuilder: new(),
+            dbName,
+            confirmDropCallback: _ => true,
+            CancellationToken.None);
 
         await Assert.That(result).IsFalse();
     }
