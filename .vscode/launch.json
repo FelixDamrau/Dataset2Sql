@@ -2,13 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Dataset2Sql",
+      "name": "Launch DataSet2Sql",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Dataset2Sql/bin/Debug/net10.0/Dataset2Sql.dll",
+      "program": "${workspaceFolder}/src/DataSet2Sql/bin/Debug/net10.0/DataSet2Sql.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/Dataset2Sql",
+      "cwd": "${workspaceFolder}/src/DataSet2Sql",
       "console": "externalTerminal",
       "internalConsoleOptions": "neverOpen",
       "stopAtEntry": false

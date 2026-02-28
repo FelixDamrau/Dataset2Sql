@@ -2,12 +2,12 @@
 members = ["dist:."]
 
 [package]
-name = "Dataset2Sql"
+name = "DataSet2Sql"
 description = "Insert XML serialized datasets into MSSQL DBs"
 version = "0.2.1"    # keep in sync with your release version
-repository = "https://github.com/FelixDamrau/Dataset2Sql"
+repository = "https://github.com/FelixDamrau/DataSet2Sql"
 license = "GPLv3"
-binaries = ["Dataset2Sql"]
+binaries = ["DataSet2Sql"]
 build-command = ["pwsh", "-File", "./scripts/dist-build.ps1"]
 
 # Config for 'dist'
