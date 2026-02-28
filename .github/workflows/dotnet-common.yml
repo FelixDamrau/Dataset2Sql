@@ -34,21 +34,21 @@ jobs:
             nuget.config
 
       - name: Restore dependencies
-        run: dotnet restore Dataset2Sql.slnx
+        run: dotnet restore DataSet2Sql.slnx
 
       - name: Verify formatting
         if: inputs.enforce_format == true
-        run: dotnet format Dataset2Sql.slnx --verify-no-changes --no-restore
+        run: dotnet format DataSet2Sql.slnx --verify-no-changes --no-restore
 
       - name: Build
-        run: dotnet build Dataset2Sql.slnx --configuration Release --no-restore
+        run: dotnet build DataSet2Sql.slnx --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --solution Dataset2Sql.slnx --configuration Release --no-build --no-restore --minimum-expected-tests 1
+        run: dotnet test --solution DataSet2Sql.slnx --configuration Release --no-build --no-restore --minimum-expected-tests 1
 
       - name: Publish
         run: |
-          dotnet publish src/Dataset2Sql/Dataset2Sql.csproj \
+          dotnet publish src/DataSet2Sql/DataSet2Sql.csproj \
             --configuration Release \
             --runtime win-x64 \
             --self-contained true \
@@ -84,7 +84,7 @@ jobs:
       - name: Create zip archive
         run: |
           cd "${{ inputs.publish_output }}"
-          zip -r "../Dataset2Sql_${{ github.ref_name }}.zip" *
+          zip -r "../DataSet2Sql_${{ github.ref_name }}.zip" *
           cd ..
 
       - name: Create GitHub Release
@@ -93,7 +93,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          name: Dataset2Sql_${{ github.ref_name }}
+          name: DataSet2Sql_${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: ./Dataset2Sql_${{ github.ref_name }}.zip
+          files: ./DataSet2Sql_${{ github.ref_name }}.zip
